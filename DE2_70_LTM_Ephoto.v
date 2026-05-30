@@ -616,13 +616,13 @@ wire [DATA_WIDTH-1:0] ram_idata_2;
 wire [DATA_WIDTH-1:0] ram_odata_1;
 wire [DATA_WIDTH-1:0] ram_odata_2;
 
-assign ram_wren_1 = 0;
+// assign ram_wren_1 = 0;
 assign ram_wren_2 = 0;
-assign ram_idata_1 = 0;
+// assign ram_idata_1 = 0;
 assign ram_idata_2 = 0;
 assign ram_addr_2 = 0;
 
-// dual_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/intmap.hex") mem_ram(
+// dual_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex") mem_ram(
 //                         .iCLK(iCLK_50),
 //                         .iRST_n(DLY0),
 //                         .iWrite_enable_1(ram_wren_1),
@@ -635,7 +635,7 @@ assign ram_addr_2 = 0;
 //                         .oData_2        (ram_odata_2)
 // );
 
-my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex") b_ram(
+my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex") intmap(
     .iCLK           (iCLK_50),
     .iRST_n         (DLY0),
     .iWrite_enable  (ram_wren_1),
@@ -643,18 +643,67 @@ my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex
     .iData          (ram_idata_1),
     .oData          (ram_odata_1)
 );
-// defparam my_ram.INIT_FILE = "D:/!Github_coding/fpga_snake_game/intmap.hex";
 
 wire [15:0] read_lcd_addr;
-assign ram_addr_1 = read_lcd_addr;
-assign read_int_data = ram_odata_1;
+// assign ram_addr_1 = read_lcd_addr;
+// assign read_int_data = ram_odata_1;
 
 intmap_lcd_controller u10(
-						.iCLK(iCLK_50),
-						.iRST_n(DLY0),
-						.iEnable(mRead),
-						.iVsync(ltm_vd),
-						.oAddr(read_lcd_addr)
+                        .iCLK(iCLK_50),
+                        .iRST_n(DLY0),
+                        .iEnable(mRead),
+                        .iVsync(ltm_vd),
+                        .oAddr(read_lcd_addr)
+);
+
+wire [3:0] snake_status;
+wire [3:0] snake_readdata;
+wire [3:0] snake_writedata;
+wire [15:0] snake_addr;
+wire [2:0] movement;
+wire new_move;
+
+snake_controller u11(
+                        .iCLK(iCLK_50),
+                        .iRST_n(DLY0),
+                        .iMove(movement),
+                        .iMapData(snake_readdata),
+                        .oMapAddr(snake_addr),
+                        .oMapData(snake_writedata),
+                        .oStatus(snake_status),
+);
+
+arbiter u12(
+                        .iCLK(iCLK_50),
+                        .iRST_n(DLY0),
+
+                        .iSnakeStatus(snake_status),
+                        .iSnakeData(snake_writedata),
+                        .iSnakeAddr(snake_addr),
+                        .oSnakeData(snake_readdata),
+
+                        .iLcdAddr(read_lcd_addr),
+                        .oLcdData(read_int_data),
+
+                        .oMemAddr(ram_addr_1),
+                        .iMemReadData(ram_odata_1),
+                        .oWriteEnable(ram_wren_1),
+                        .oMemWriteData(ram_idata_1),
+                        //oStatus() //?
+);
+
+coordinate_checker u13(
+                    .iCLK(iCLK_50),           // system clock
+                    .iRST_n(DLY0),         // system reset 
+                    .iX_COORD(x_coord),       // X coordinate from touch panel
+                    .iY_COORD(y_coord),       // Y coordinate from touch panel
+                    .iNEW_COORD(new_coord),     // new coordinates indicate (this is a bit whack for whatever reason)
+                    // .iNEW_TOUCH(new_touch),     // touch panel 
+                    // .iTOUCH_IRQ(touch_irq),
+                    .oMOVEMENT(movement),      // movement direction (up down left right none)
+                    .iADC_PENIRQ_n(adc_penirq_n), // okay this one works >:)
+                    .oNEW_MOVE(new_move)       // new movement indicate
+
 );
 
 endmodule

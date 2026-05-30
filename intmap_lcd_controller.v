@@ -5,7 +5,7 @@
 +-----------+     |
                   |
 +-------+    +-------+
-| RAM   |----| this  |
+|arbiter|----| this  |
 |       |----| module|
 +-------+    +-------+
 */
@@ -25,13 +25,13 @@ module intmap_lcd_controller(
 parameter DEPTH = 16;
 parameter WIDTH = 4;
 
-localparam X_RESOLUTION = 8'd40;
-localparam Y_RESOLUTION = 8'd40;
+parameter X_RESOLUTION = 8'd40;
+parameter Y_RESOLUTION = 8'd40;
 
-localparam X_LENGTH = 8'd20;
-localparam Y_LENGTH = 8'd20;
+parameter X_LENGTH = 8'd20;
+parameter Y_LENGTH = 8'd20;
 
-parameter COUNTER_CAP = 24'd384000; // this is not used
+parameter COUNTER_CAP = 24'd384000; // this is not used 
 
 //=============================================================================
 // REG/WIRE declarations
