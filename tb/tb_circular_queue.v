@@ -65,12 +65,14 @@ always @(posedge clk or negedge reset) begin
 end
 
 always @(posedge clk) begin
-    ixdata <= $random&8'hff;
-    iydata <= $random&8'hff;
     if(wvalid) begin
+        ixdata <= $random&8'hff;
+        iydata <= $random&8'hff;
         iPUSH <= 1;
     end
     else begin
+        ixdata <= 0;
+        iydata <= 0;
         iPUSH <= 0;
     end
 end

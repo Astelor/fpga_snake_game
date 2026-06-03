@@ -1,13 +1,13 @@
-module circular_queue(
+module circular_queue #(parameter DATA_WIDTH = 8, ADDR_DEPTH = 16)(
     input                       iCLK,    // system clock
     input                       iRST_n,  // system reset
-    input  [1:0]                iCommand, //bit 0 -> push, bit 1 -> pop            
-    input  [DATA_WIDTH-1:0]     iXData,
-    input  [DATA_WIDTH-1:0]     iYData,
+    input      [1:0]            iCommand, //bit 0 -> push, bit 1 -> pop            
+    input      [DATA_WIDTH-1:0] iXData,
+    input      [DATA_WIDTH-1:0] iYData,
     output                      oRValid, // tell the outside that fifo read data is valid
     output reg                  oWValid, // tell outside fifo writing is ready
-    output reg [DATA_WIDTH-1:0] oXData,
-    output reg [DATA_WIDTH-1:0] oYData,
+    output     [DATA_WIDTH-1:0] oXData,
+    output     [DATA_WIDTH-1:0] oYData,
     output     [DATA_WIDTH-1:0] oSize    // size of the fifo queue 
 
     /*port declarations*/
@@ -18,8 +18,8 @@ module circular_queue(
 //=============================================================================
 parameter PUSH = 0, POP = 1; // bit position for the command
 parameter IDLE=0, WRITE=1, INCADR=2, WAIT=3;
-parameter DATA_WIDTH = 8;
-parameter ADDR_DEPTH = 16;
+// parameter DATA_WIDTH = 8;
+// parameter ADDR_DEPTH = 16;
 parameter ReadData=1, ReadReq=2;
 
 //=============================================================================
@@ -123,7 +123,7 @@ always @(posedge iCLK or negedge iRST_n) begin
             end
             WRITE: begin
                 rDwrite <= 1;
-                rState1 <= INCADR;
+                rState1 <= IDLE;
             end
             INCADR: begin /* increase number */
                 rState1 <= IDLE;
@@ -131,6 +131,9 @@ always @(posedge iCLK or negedge iRST_n) begin
         endcase
     end
 end
+
+assign oXData = xq;
+assign oYData = yq;
 
 // read control
 always@(posedge iCLK or negedge iRST_n) begin
@@ -161,8 +164,8 @@ always@(posedge iCLK or negedge iRST_n) begin
                 rState2 <= ReadData;
             end
             ReadData: begin /* read valid data */
-                oXData <=  xq;
-                oYData <=  yq;
+                // oXData <=  xq;
+                // oYData <=  yq;
                 rReadvalid <= 1; // data valid
                 rState2 <= IDLE;
             end

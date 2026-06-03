@@ -491,8 +491,8 @@ assign {oHEX0_DP,oHEX1_DP,oHEX2_DP,oHEX3_DP,oHEX4_DP,oHEX5_DP,oHEX6_DP,oHEX7_DP}
 assign adc_ltm_sclk	= ( adc_dclk & ltm_3wirebusy_n )  |  ( ~ltm_3wirebusy_n & ltm_sclk );
 
 assign oLEDG[1] = mRead;
-assign oLEDG[4:3] = test;
-assign oLEDG[5] = ltm_hd;
+// assign oLEDG[4:3] = test;
+assign oLEDG[4:2] = movement;
 reg [1:0] test;
 reg [1:0] test2;
 assign ltm_nclk = div[0];
@@ -635,7 +635,7 @@ assign ram_addr_2 = 0;
 //                         .oData_2        (ram_odata_2)
 // );
 
-my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex") intmap(
+my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/dummy.hex") intmap(
     .iCLK           (iCLK_50),
     .iRST_n         (DLY0),
     .iWrite_enable  (ram_wren_1),
@@ -663,7 +663,7 @@ wire [15:0] snake_addr;
 wire [2:0] movement;
 wire new_move;
 
-snake_controller u11(
+snake_controller #(DATA_DEPTH, 5_000_000) u11(
                         .iCLK(iCLK_50),
                         .iRST_n(DLY0),
                         .iMove(movement),

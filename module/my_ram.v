@@ -49,7 +49,7 @@ always @(posedge iCLK /*or negedge iRST_n*/) begin
     // end
     if(iWrite_enable) begin
         rMemory[iAddress] <= iData;
-        // oData <= iData;
+        oData <= iData;
     end
     else begin
         oData <= rMemory[iAddress];
