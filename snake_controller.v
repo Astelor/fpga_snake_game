@@ -73,9 +73,6 @@ reg [DATA_WIDTH-1:0] rSize;
 reg [DATA_WIDTH-1:0] rHeadX;
 reg [DATA_WIDTH-1:0] rHeadY;
 
-// reg [DATA_WIDTH-1:0] rFoodX;
-// reg [DATA_WIDTH-1:0] rFoodY;
-
 reg [DATA_WIDTH-1:0] rLastX;
 reg [DATA_WIDTH-1:0] rLastY;
 
@@ -91,14 +88,18 @@ reg signed [DATA_WIDTH-1:0] rDistY;
 wire [DATA_WIDTH-1:0] absDistX = (rDistX < 0) ? (8'hFF)*rDistX : rDistX;
 wire [DATA_WIDTH-1:0] absDistY = (rDistY < 0) ? (8'hFF)*rDistY : rDistY;
 
-// reg [DATA_WIDTH-1:0] increX;
-// reg [DATA_WIDTH-1:0] increY;
-
 wire signed [DATA_WIDTH-1:0] offsetMapX = (rDistX != 0) ? ((rDistX  > 0) ? 1 : -1) : 0;
 wire signed [DATA_WIDTH-1:0] offsetMapY = (rDistY != 0) ? ((rDistY  > 0) ? 1 : -1) : 0;
 
 wire signed [DATA_WIDTH-1:0] offsetX = ~(offsetMapX) + 1; // TODO: (this does not make sense)
 wire signed [DATA_WIDTH-1:0] offsetY = ~(offsetMapY) + 1;
+
+reg [DATA_WIDTH-1:0] rFoodX;
+reg [DATA_WIDTH-1:0] rFoodY;
+
+reg is_food;
+reg is_consumed;
+
 wire TEST = (absDistX & absDistY) ? 1:0; // the distances should not be both non zero
 //=============================================================================
 // FUNCTIONS/MODULE declarations
@@ -138,9 +139,21 @@ always @(posedge iCLK or negedge iRST_n) begin
     end
 end
 
+always @(posedge iCLK or negedge iRST_n) begin
+    if(!iRST_n) begin
+        // is_food <= 1;
+        rFoodX <= 7;
+        rFoodY <= 7;
+    end
+    else if(is_food)begin
+        rFoodX <= (rHeadX * rFoodX) % (SNAKE_X); // sorry no random
+        rFoodY <= (rHeadY * rFoodX) % (SNAKE_Y); 
+    end
+end
+
 parameter IDLE = 0, INIT = 1, WRITE=2, INPUT_WAIT = 3, MOVE = 4;
-parameter INIT_HEAD = 6, INIT_TAIL = 7;
-parameter SSNAKE1 = 5, SSNAKE2 = 8, SSNAKE3 = 9, SSNAKE4 = 10, SSNAKE5 = 11,SSNAKE6=12;
+parameter SSNAKE1 = 5, SSNAKE2 = 6, SSNAKE3 = 7, SSNAKE4 = 8, SSNAKE5 = 9;
+parameter DRAW_FOOD = 10;
 always @(posedge iCLK or negedge iRST_n) begin
     if(!iRST_n) begin
         rState <= IDLE;
@@ -152,20 +165,21 @@ always @(posedge iCLK or negedge iRST_n) begin
         qPOP  <= 0;
         qPUSH <= 0;
         rTrig <= 0;
+        is_consumed <= 0;
+        is_food <= 0; // pulse
     end else begin
         /*====  Default Signals ====*/
         rState <= rState;
         oStatus <= oStatus;
         qPOP  <= 0;
         qPUSH <= 0;
+        is_food <= 0; // pulse
         /*====  State Machine ======*/
         case (rState)
             IDLE: begin
-                if(qWriteValid) begin
-                    rState <= INIT_HEAD;
-                end
+                rState <= INIT;
             end
-            INIT_HEAD : begin // snake init head
+            INIT : begin // snake init head
                 if(qWriteValid && (!rTrig)) begin
                     rTrig <= 1;
                 end
@@ -186,7 +200,7 @@ always @(posedge iCLK or negedge iRST_n) begin
                     end
                     else if(counter == 1) begin
                         qixData <= 5;
-                        qiyData <= 15;
+                        qiyData <= 10;
                         qPUSH <= 1; 
                     end
                 end
@@ -211,6 +225,16 @@ always @(posedge iCLK or negedge iRST_n) begin
                     ((rCurrentMove == MOVE_DOWN ) && (rHeadX == 0        ) )   ) begin
                     rCurrentMove <= rLastMove;
                     rState <= INPUT_WAIT; // boundary check failed
+                end
+                else if (
+                    ((rCurrentMove == MOVE_LEFT ) && (rLastMove == MOVE_RIGHT)) ||
+                    ((rCurrentMove == MOVE_RIGHT) && (rLastMove == MOVE_LEFT )) ||
+                    ((rCurrentMove == MOVE_UP   ) && (rLastMove == MOVE_DOWN )) ||
+                    ((rCurrentMove == MOVE_DOWN ) && (rLastMove == MOVE_UP   ))  ) begin
+                    // no going back
+                    // rLastMove <= rLastMove;
+                    rCurrentMove <= rLastMove;
+                    rState <= INPUT_WAIT;
                 end
                 else begin
                     case (rCurrentMove)
@@ -244,6 +268,12 @@ always @(posedge iCLK or negedge iRST_n) begin
                 end
             end
             SSNAKE1 : begin
+                // food 
+                if((rHeadX == rFoodX) && (rHeadY == rFoodY)) begin
+                    is_consumed <= 1;
+                    is_food <= 1;
+                end
+                // snake
                 if(qWriteValid && (!rTrig)) begin
                     rTrig <= 1;
                 end
@@ -318,8 +348,12 @@ always @(posedge iCLK or negedge iRST_n) begin
             SSNAKE4 : begin // last node
                 if(qWriteValid && (!rTrig)) begin
                     rTrig <= 1;
-                    rCurrentX <= (rDistX != 0) ? (rCurrentX + offsetX) : rCurrentX;
-                    rCurrentY <= (rDistY != 0) ? (rCurrentY + offsetY) : rCurrentY;
+                    rCurrentX <= ((rDistX != 0) && (is_consumed != 1)) ? (rCurrentX + offsetX) : rCurrentX;
+                    rCurrentY <= ((rDistY != 0) && (is_consumed != 1)) ? (rCurrentY + offsetY) : rCurrentY;
+                    // if(is_consumed) begin
+                        // is_food <= 1;
+                    is_consumed <= 0;
+                    // end
                 end
                 if(rTrig) begin
                     rTrig <= 0;
@@ -331,22 +365,20 @@ always @(posedge iCLK or negedge iRST_n) begin
                         qPUSH <= 1;
                     end
                     // rState <= INPUT_WAIT;
-                    rState <= WRITE;
+                    // rState <= WRITE;
+                    rState <= DRAW_FOOD;
                 end
             end
-            WRITE : begin
+            DRAW_FOOD : begin
+                oMapAddr <= (rFoodY * SNAKE_X) + rFoodX;
+                oMapData <= SNAKE_FOOD;
+                rState <= WRITE;
+            end
+            WRITE : begin // okay it actually need this state
                 rState <= INPUT_WAIT; 
             end
         endcase
     end
 end
-
-// test later
-// task my_task(input [3:0] X,input [3:0] Y);
-// begin
-//   qixData <= X;
-//   qiyData <= Y;
-// end
-// endtask
 
 endmodule
