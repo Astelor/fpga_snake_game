@@ -69,16 +69,19 @@ parameter Hsync_Front_Porch = 40;
 parameter Vertical_Back_Porch = 35;
 parameter Vertical_Front_Porch = 10;
 
-
 parameter SNAKE_GRASS = 4'd0;
 parameter SNAKE_BODY  = 4'd1;
 parameter SNAKE_HEAD  = 4'd2;
 parameter SNAKE_FOOD  = 4'd3;
+parameter SNAKE_CONTROL = 4'd4;
+parameter DARK_GREEN    = 4'd5;
 
 parameter BODY_HEX  = 24'hDBE4E2; //24'hFFFFFF;
 parameter HEAD_HEX  = 24'hDA4031; //24'hFF0000;
 parameter FOOD_HEX  = 24'hF1CF1F; //24'hFFFF00;
 parameter GRASS_HEX = 24'h269470; //24'h00FF00;
+parameter CONTROL_HEX = 24'hFF39ED;
+parameter DARK_GREEN_HEX = 24'h1C6B51;
 //===========================================================================
 // PORT declarations
 //===========================================================================
@@ -139,22 +142,28 @@ assign	display_area = ((x_cnt>(Hsync_Blank-1)&& //>215
 						))  ? 1'b1 : 1'b0;
 
 assign read_red = (!display_area) ? 8'b0 : 
-				  (iREAD_INT_DATA == SNAKE_GRASS) ? GRASS_HEX[23:16]:
-				  (iREAD_INT_DATA == SNAKE_BODY ) ? BODY_HEX [23:16]:
-				  (iREAD_INT_DATA == SNAKE_FOOD ) ? FOOD_HEX [23:16]:
-				  (iREAD_INT_DATA == SNAKE_HEAD ) ? HEAD_HEX [23:16]
+				  (iREAD_INT_DATA == SNAKE_GRASS   ) ? GRASS_HEX      [23:16] :
+				  (iREAD_INT_DATA == SNAKE_BODY    ) ? BODY_HEX       [23:16] :
+				  (iREAD_INT_DATA == SNAKE_FOOD    ) ? FOOD_HEX       [23:16] :
+				  (iREAD_INT_DATA == SNAKE_HEAD    ) ? HEAD_HEX       [23:16] :
+				  (iREAD_INT_DATA == SNAKE_CONTROL ) ? CONTROL_HEX    [23:16] :
+				  (iREAD_INT_DATA == DARK_GREEN    ) ? DARK_GREEN_HEX [23:16]
 					: 8'b0;
 assign read_green = (!display_area) ? 8'b0 : 
-				  (iREAD_INT_DATA == SNAKE_GRASS) ? GRASS_HEX[15:8]:
-				  (iREAD_INT_DATA == SNAKE_BODY ) ? BODY_HEX [15:8]:
-				  (iREAD_INT_DATA == SNAKE_FOOD ) ? FOOD_HEX [15:8]:
-				  (iREAD_INT_DATA == SNAKE_HEAD ) ? HEAD_HEX [15:8]
+				  (iREAD_INT_DATA == SNAKE_GRASS   ) ? GRASS_HEX      [15:8] :
+				  (iREAD_INT_DATA == SNAKE_BODY    ) ? BODY_HEX       [15:8] :
+				  (iREAD_INT_DATA == SNAKE_FOOD    ) ? FOOD_HEX       [15:8] :
+				  (iREAD_INT_DATA == SNAKE_HEAD    ) ? HEAD_HEX       [15:8] :
+				  (iREAD_INT_DATA == SNAKE_CONTROL ) ? CONTROL_HEX    [15:8] :
+				  (iREAD_INT_DATA == DARK_GREEN    ) ? DARK_GREEN_HEX [15:8]
 					: 8'b0;
 assign read_blue = (!display_area) ? 8'b0 :
-				  (iREAD_INT_DATA == SNAKE_GRASS) ? GRASS_HEX[7:0] :
-				  (iREAD_INT_DATA == SNAKE_BODY ) ? BODY_HEX [7:0] :
-				  (iREAD_INT_DATA == SNAKE_FOOD ) ? FOOD_HEX [7:0] :
-				  (iREAD_INT_DATA == SNAKE_HEAD ) ? HEAD_HEX [7:0] 
+				  (iREAD_INT_DATA == SNAKE_GRASS   ) ? GRASS_HEX      [7:0] :
+				  (iREAD_INT_DATA == SNAKE_BODY    ) ? BODY_HEX       [7:0] :
+				  (iREAD_INT_DATA == SNAKE_FOOD    ) ? FOOD_HEX       [7:0] :
+				  (iREAD_INT_DATA == SNAKE_HEAD    ) ? HEAD_HEX       [7:0] :
+				  (iREAD_INT_DATA == SNAKE_CONTROL ) ? CONTROL_HEX    [7:0] :
+				  (iREAD_INT_DATA == DARK_GREEN    ) ? DARK_GREEN_HEX [7:0]
 					: 8'b0;
 
 // assign	read_red 	= display_area ? /*iREAD_DATA1[15:8]*/iREAD_DATA_R[7:0] : 8'b0;

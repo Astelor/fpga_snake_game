@@ -421,7 +421,6 @@ wire	[11:0] 	y_coord;
 wire			new_coord;
 wire	[2:0]	photo_cnt;
 // clock
-wire 			F_CLK;// flash read clock
 reg 	[31:0] 	div;
 // sdram to touch panel timing
 wire			mRead;
@@ -485,8 +484,6 @@ assign	GPIO_0[31]	=ltm_sda;
 
 
 assign ltm_grst		= iKEY[0];
-assign F_CLK 		= div[3];
-assign oFLASH_BYTE_N = 1'b0;
 assign {oHEX0_DP,oHEX1_DP,oHEX2_DP,oHEX3_DP,oHEX4_DP,oHEX5_DP,oHEX6_DP,oHEX7_DP}=8'hff;
 assign adc_ltm_sclk	= ( adc_dclk & ltm_3wirebusy_n )  |  ( ~ltm_3wirebusy_n & ltm_sclk );
 
@@ -588,67 +585,34 @@ lcd_timing_controller	u6  (
 							);
 
 
-Reset_Delay			u8	   (.iCLK(iCLK_50),
+Reset_Delay			u7	   (.iCLK(iCLK_50),
 							.iRST(iKEY[0]),
 							.oRST_0(DLY0),
 							.oRST_1(DLY1),
 							.oRST_2(DLY2)
 							);
 
-// RGB_ram                 u9 (
-// 							.iCLK(iCLK_50),
-// 							.iRST_n(DLY1),
-// 							.iEnable(mRead),
-// 							.oRData(read_data_r),
-// 							.oGData(read_data_g),
-// 							.oBData(read_data_b)
-// );
-
-
 parameter DATA_WIDTH = 4;
 parameter DATA_DEPTH = 12;
-wire ram_wren_1;
-wire ram_wren_2;
-wire [DATA_DEPTH-1:0] ram_addr_1;
-wire [DATA_DEPTH-1:0] ram_addr_2;
-wire [DATA_WIDTH-1:0] ram_idata_1;
-wire [DATA_WIDTH-1:0] ram_idata_2;
-wire [DATA_WIDTH-1:0] ram_odata_1;
-wire [DATA_WIDTH-1:0] ram_odata_2;
+wire ram_wren;
+wire [DATA_DEPTH-1:0] ram_addr;
+wire [DATA_WIDTH-1:0] ram_idata;
+wire [DATA_WIDTH-1:0] ram_odata;
 
-// assign ram_wren_1 = 0;
-assign ram_wren_2 = 0;
-// assign ram_idata_1 = 0;
-assign ram_idata_2 = 0;
-assign ram_addr_2 = 0;
-
-// dual_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map.hex") mem_ram(
-//                         .iCLK(iCLK_50),
-//                         .iRST_n(DLY0),
-//                         .iWrite_enable_1(ram_wren_1),
-//                         .iWrite_enable_2(ram_wren_2),
-//                         .iAddress_1     (ram_addr_1),
-//                         .iAddress_2     (ram_addr_2),
-//                         .iData_1        (ram_idata_1),
-//                         .iData_2        (ram_idata_2),
-//                         .oData_1        (ram_odata_1),
-//                         .oData_2        (ram_odata_2)
-// );
-
-my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/dummy.hex") intmap(
+my_ram #(DATA_WIDTH,DATA_DEPTH,"D:/!Github_coding/fpga_snake_game/python/map_new.hex") intmap(
     .iCLK           (iCLK_50),
     .iRST_n         (DLY0),
-    .iWrite_enable  (ram_wren_1),
-    .iAddress       (ram_addr_1),
-    .iData          (ram_idata_1),
-    .oData          (ram_odata_1)
+    .iWrite_enable  (ram_wren),
+    .iAddress       (ram_addr),
+    .iData          (ram_idata),
+    .oData          (ram_odata)
 );
 
 wire [15:0] read_lcd_addr;
-// assign ram_addr_1 = read_lcd_addr;
-// assign read_int_data = ram_odata_1;
+// assign ram_addr = read_lcd_addr;
+// assign read_int_data = ram_odata;
 
-intmap_lcd_controller u10(
+intmap_lcd_controller u8(
                         .iCLK(iCLK_50),
                         .iRST_n(DLY0),
                         .iEnable(mRead),
@@ -663,7 +627,7 @@ wire [15:0] snake_addr;
 wire [2:0] movement;
 wire new_move;
 
-snake_controller #(DATA_DEPTH, 5_000_000) u11(
+snake_controller #(DATA_DEPTH, 5_000_000) u9(
                         .iCLK(iCLK_50),
                         .iRST_n(DLY0),
                         .iMove(movement),
@@ -673,7 +637,7 @@ snake_controller #(DATA_DEPTH, 5_000_000) u11(
                         .oStatus(snake_status),
 );
 
-arbiter u12(
+arbiter u10(
                         .iCLK(iCLK_50),
                         .iRST_n(DLY0),
 
@@ -685,14 +649,14 @@ arbiter u12(
                         .iLcdAddr(read_lcd_addr),
                         .oLcdData(read_int_data),
 
-                        .oMemAddr(ram_addr_1),
-                        .iMemReadData(ram_odata_1),
-                        .oWriteEnable(ram_wren_1),
-                        .oMemWriteData(ram_idata_1),
+                        .oMemAddr(ram_addr),
+                        .iMemReadData(ram_odata),
+                        .oWriteEnable(ram_wren),
+                        .oMemWriteData(ram_idata),
                         //oStatus() //?
 );
 
-coordinate_checker u13(
+coordinate_checker u11(
                     .iCLK(iCLK_50),           // system clock
                     .iRST_n(DLY0),         // system reset 
                     .iX_COORD(x_coord),       // X coordinate from touch panel

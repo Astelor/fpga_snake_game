@@ -31,6 +31,7 @@ parameter DATA_WIDTH = 8; // for the queue
 // parameter TIMER_CAP  = 70;//5_000_000; // 5MHz / 50Mhz = 100 ms
 // 100;
 parameter SNAKE_X = 40, SNAKE_Y = 23; // arena boundary 
+parameter SNAKE_X_OFFSET = 13 , SNAKE_Y_OFFSET = 0;
 parameter STAT_IDLE = 0, STAT_WRITE = 1, STAT_CHECK = 2;
 parameter SNAKE_HEADX = 1, SNAKE_HEADY = 5;
 parameter SNAKE_TAILX = 15, SNAKE_TAILY = 5;
@@ -59,7 +60,7 @@ wire [DATA_WIDTH-1:0] qSize;
 
 reg qPOP, qPUSH;
 
-reg [23:0] move_timer;
+reg [31:0] move_timer;
 reg is_move; // make it a pulse?
 
 reg [3:0] rState;
@@ -142,12 +143,12 @@ end
 always @(posedge iCLK or negedge iRST_n) begin
     if(!iRST_n) begin
         // is_food <= 1;
-        rFoodX <= 7;
+        rFoodX <= 25;
         rFoodY <= 7;
     end
     else if(is_food)begin
-        rFoodX <= (rHeadX * rFoodX) % (SNAKE_X); // sorry no random
-        rFoodY <= (rHeadY * rFoodX) % (SNAKE_Y); 
+        rFoodX <= (rHeadX * rFoodX) % (SNAKE_X-SNAKE_X_OFFSET-2) + SNAKE_X_OFFSET + 1; // sorry no random
+        rFoodY <= (rHeadY * rFoodX) % (SNAKE_Y);
     end
 end
 
@@ -185,24 +186,12 @@ always @(posedge iCLK or negedge iRST_n) begin
                 end
                 if(rTrig) begin
                     rTrig <= 0;
-                    if(counter < 2) begin
-                        counter <= counter + 1;
-                    end
-                    else begin
-                        counter <= 0;
-                        rState <= INPUT_WAIT;
-                    end
-                    if(counter == 0) begin
-                        // qixData <= 5;
-                        // qiyData <= 6;
-                        rHeadX <= 5; // head
-                        rHeadY <= 6;
-                    end
-                    else if(counter == 1) begin
-                        qixData <= 5;
-                        qiyData <= 10;
-                        qPUSH <= 1; 
-                    end
+                    rHeadX <= 20; // head
+                    rHeadY <= 6;
+                    qixData <= 20;
+                    qiyData <= 10;
+                    qPUSH <= 1; 
+                    rState <= INPUT_WAIT;
                 end
             end
             INPUT_WAIT : begin // wait for movement trigger
@@ -219,10 +208,10 @@ always @(posedge iCLK or negedge iRST_n) begin
                     rState <= INPUT_WAIT; // reject no movement
                 end
                 else if( 
-                    ((rCurrentMove == MOVE_LEFT ) && (rHeadY == SNAKE_Y-1) ) ||
-                    ((rCurrentMove == MOVE_RIGHT) && (rHeadY == 0        ) ) ||
-                    ((rCurrentMove == MOVE_UP   ) && (rHeadX == SNAKE_X-1) ) ||
-                    ((rCurrentMove == MOVE_DOWN ) && (rHeadX == 0        ) )   ) begin
+                    ((rCurrentMove == MOVE_LEFT ) && (rHeadY == SNAKE_Y-1     ) ) ||
+                    ((rCurrentMove == MOVE_RIGHT) && (rHeadY == 1             ) ) ||
+                    ((rCurrentMove == MOVE_UP   ) && (rHeadX == SNAKE_X-2     ) ) ||
+                    ((rCurrentMove == MOVE_DOWN ) && (rHeadX == SNAKE_X_OFFSET) )   ) begin
                     rCurrentMove <= rLastMove;
                     rState <= INPUT_WAIT; // boundary check failed
                 end

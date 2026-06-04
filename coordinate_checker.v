@@ -16,12 +16,12 @@ module coordinate_checker (
 //=============================================================================
 // PARAMETER declarations
 //=============================================================================
-parameter middle_X = 12'h800; // for left and right
-parameter middle_Y = 12'hc00; // for up and down
-parameter CTRL_X1 = 12'h600;
-parameter CTRL_Y1 = 12'hB00;
-parameter CTRL_X2 = 12'hA00;
-parameter CTRL_Y2 = 12'hD00;
+// parameter middle_X = 12'h800; // for left and right
+// parameter middle_Y = 12'hc00; // for up and down
+parameter CTRL_X1 = 12'h700;
+parameter CTRL_Y1 = 12'hD00;
+parameter CTRL_X2 = 12'h900;
+parameter CTRL_Y2 = 12'hE00;
 
 parameter NONE       = 0;
 parameter MOVE_UP    = 3'b001; // 1
