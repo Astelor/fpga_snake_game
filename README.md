@@ -15,14 +15,13 @@ Project structure
  ┃ ┗ 📜three_wire_controller.v
  ┣ 📂module
  ┃ ┣ 📜dual_ram.v
- ┃ ┣ 📜my_ram.v                 // <- the FPGA ram block used for int map
+ ┃ ┗ 📜my_ram.v                 // <- the FPGA ram block used for int map
  ┣ 📂python
  ┃ ┣ 📜gen-test-pattern.ipynb   // <- map generation Python scripts
  ┃ ┣ 📜map20x20.png
  ┃ ┣ 📜map40x20.png
  ┃ ┣ 📜map40x24.png             // <- the map used 
- ┃ ┣ 📜map_new.hex              // <- the map hex data used
- ┃ ┗ 📜rhex.hex
+ ┃ ┗ 📜map_new.hex              // <- the map hex data used
  ┣ 📂quartus
  ┃ ┣ 📂ip
  ┃ ┃ ┗ 📜new_fifo.v             // <- Quartus generated IP core (megafunction)
