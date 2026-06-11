@@ -1,7 +1,7 @@
 # Snake on DE2_70
 Goal: Build a simple pixel snake game with touch screen controls and LCD monitor display
 
-[![Demo on youtube](https://www.youtube.com/watch?v=EEYVH59Jv6M)]
+![Demo on youtube](https://youtu.be/EEYVH59Jv6M)
 
 **Project structure**
 ```
