@@ -1,8 +1,9 @@
-# Snake on DE2_70 from scratch
+# Snake on DE2_70
+Goal: Build a simple pixel snake game with touch screen controls and LCD monitor display
 
-Goal: build a simple pixel snake game with touch screen controls and LCD monitor display
+[![FPGA SNAKE DEMO](https://img.youtube.com/vi/EEYVH59Jv6M/0.jpg)](https://www.youtube.com/watch?v=EEYVH59Jv6M)
 
-Project structure
+**Project structure**
 ```
 📦fpga_snake_game
  ┣ 📂ltm                         // modules from example program
