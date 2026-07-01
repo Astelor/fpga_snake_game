@@ -3,6 +3,8 @@ Goal: Build a simple pixel snake game with touch screen controls and LCD monitor
 
 **[[Demo on youtube](https://youtu.be/EEYVH59Jv6M)]**
 
+**[[Presentation file](fpga%20finals.pdf)]**
+
 **Project structure**
 ```
 📦fpga_snake_game
